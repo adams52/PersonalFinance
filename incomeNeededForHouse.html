@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Income Needed For House</title>
+	<style type="text/css">
+		div {
+			margin-bottom:10px;
+		}
+		label {
+			display:inline-block;
+			width:150px;
+			text-align:right;
+		}
+		h4 {
+			display:inline;
+			vertical-align:bottom;
+		}
+		p {
+			margin-left:25px;
+		}
+		input[type=text] {
+			text-align:right;
+		}
+		a.expandable {
+			text-decoration:none;
+			width:1em;
+			text-align:center;
+			font-weight:bold;
+			display:inline-table;
+			vertical-align:middle;
+		}
+	</style>
+	<script type="text/javascript">
+		Number.prototype.formatMoney = function(c, d, t) {
+			var n = this,
+			c = isNaN(c = Math.abs(c)) ? 2 : c,
+			d = d == undefined ? "." : d,
+			t = t == undefined ? "," : t,
+			s = n < 0 ? "-" : "",
+			i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
+			j = (j = i.length) > 3 ? j % 3 : 0;
+			return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+		};
+		
+		function showHideOther(elementId) {
+			var disp = document.getElementById(elementId);
+			if (disp.style.display == "") {
+				disp.style.display = "none";
+			} else {
+				disp.style.display = "";
+			}
+		}
+		
+		function showClick(elementId) {
+			var disp = document.getElementById(elementId);
+			if (disp.innerHTML == "+") {
+				disp.innerHTML = "-";
+			} else {
+				disp.innerHTML = "+";
+			}
+		}
+		
+		function calc() {
+			var houseCost = document.getElementById("houseCost").value;
+			var limit = document.getElementById("limit").value*.01;
+			var loanInterest = document.getElementById("loanRate").value*.01;
+			var monthlyInterest = loanInterest/12;
+			var downPayment = document.getElementById("downPayment").value*.01;
+			var years = document.getElementById("loanTerm").value;
+			var insurancePercent = document.getElementById("insurancePercent").value*.01;
+			var maintenancePercent = document.getElementById("maintenanceCosts").value*.01;
+			var propertyTaxPercent = document.getElementById("propertyTaxes").value*.01;
+			var utilityPercent = document.getElementById("utilities").value*.01;
+			var closingCostsPercent = document.getElementById("closingCosts").value*.01;
+			
+			var partA = (monthlyInterest*(1-downPayment));
+			var partB = 1-Math.pow((1+monthlyInterest),-(years*12));
+			var partC = partA/partB;
+			var partD = insurancePercent/12+maintenancePercent/12+propertyTaxPercent/12+utilityPercent/12;
+			var total = partC+partD;
+			
+			
+			var income = (total*houseCost)/limit*12;
+			document.getElementById("income").value = "$" + income.formatMoney(2);
+			
+			var downPaymentAmount = houseCost*downPayment;
+			document.getElementById("downPaymentAmount").value = "$" + downPaymentAmount.formatMoney(2);
+			
+			var closingCostsAmount = houseCost*closingCostsPercent;
+			document.getElementById("closingCostsAmount").value = "$" + closingCostsAmount.formatMoney(2);
+			
+			var totalCash = downPaymentAmount+closingCostsAmount;
+			document.getElementById("totalCash").value = "$" + totalCash.formatMoney(2);
+			
+			var loanAmount = houseCost - downPaymentAmount;
+			document.getElementById("loanAmount").value = "$" + loanAmount.formatMoney(2);
+			
+			var mortgage = (loanInterest/12*loanAmount) / (1-Math.pow((1+loanInterest/12),-(years*12)));
+			document.getElementById("mortgage").value = "$" + mortgage.formatMoney(2);
+			
+			var totalRepaid = mortgage*12*years;
+			document.getElementById("totalRepaid").value = "$" + totalRepaid.formatMoney(2);
+			
+			var interestPaid = totalRepaid-loanAmount;
+			document.getElementById("interestPaid").value = "$" + interestPaid.formatMoney(2);
+			
+			var percentInterest = interestPaid/totalRepaid*100;
+			document.getElementById("percentInterest").value = percentInterest.toFixed(2) + "%";
+			
+			var insuranceAmount = houseCost*insurancePercent/12;
+			document.getElementById("insuranceAmount").value = "$" + insuranceAmount.formatMoney(2);
+			
+			var maintenanceAmount = houseCost*maintenancePercent/12;
+			alert(maintenanceAmount);
+			document.getElementById("maintenanceAmount").value = "$" + maintenanceAmount.formatMoney(2);
+			
+			var taxAmount = houseCost*propertyTaxPercent/12;
+			document.getElementById("taxAmount").value = "$" + taxAmount.formatMoney(2);
+			
+			var utilityAmount = houseCost*utilityPercent/12;
+			document.getElementById("utilityAmount").value = "$" + utilityAmount.formatMoney(2);
+			
+			var totalOther = insuranceAmount+maintenanceAmount+taxAmount+utilityAmount;
+			document.getElementById("totalOther").value = "$" + totalOther.formatMoney(2);
+			
+			var monthlyCost = totalOther+mortgage;
+			document.getElementById("monthlyCost").value = "$" + monthlyCost.formatMoney(2);
+			
+		}
+	</script>
+</head>
+<body>
+	This calculator is for estimating how much NET income you need to buy a house with a given cost. <br /><br />
+	
+	<h4>Income:</h4>
+	<div>
+		<label for="houseCost">House cost: </label>
+		<input type="text" id="houseCost" value="158000" />
+	</div>
+	<div>
+		<label for="limit">Limit costs to this much of my monthly NET income: </label>
+		<input type="text" id="limit" value="33" />%
+	</div>
+	
+	<h4>Cash Needed</h4> <a class="expandable" id="showCash" href="#" onclick="showClick('showCash');showHideOther('cashNeeded');">+</a>
+	<div id="cashNeeded" style="display:none;">
+		<div>
+			<label for="downPayment">Down payment: </label>
+			<input type="text" id="downPayment" value="20" />%
+		</div>
+		<div>
+			<label for="closingCosts">Closing costs: </label>
+			<input type="text" id="closingCosts" value="5" />%
+		</div>
+	</div>
+	<div id="cashNeededFiller">&nbsp;</div>
+	
+	<h4>Loan Information</h4> <a class="expandable" id="showLoanInformation" href="#" onclick="showClick('showLoanInformation');showHideOther('loanInformation');">+</a>
+	<div id="loanInformation" style="display:none;">
+		<div>
+			<label for="loanRate">Loan Interest rate: </label>
+			<input type="text" id="loanRate" value="4" />%
+		</div>
+		<div>
+			<label for="loanTerm">Loan Term (Years): </label>
+			<input type="text" id="loanTerm" value="30" />
+		</div>
+	</div>
+	<div id="loanInformationFiller">&nbsp;</div>
+	
+	<h4>Non-Mortgage Costs</h4> <a class="expandable" id="showNonMortgage" href="#" onclick="showClick('showNonMortgage');showHideOther('nonMortgage');">+</a>
+	<div id="nonMortgage" style="display:none;">
+		<div>
+			<label for="insurancePercent">Insurance Percent: </label>
+			<input type="text" id="insurancePercent" value="0.5" />%
+		</div>
+		<div>
+			<label for="maintenanceCosts">Maintenance Costs: </label>
+			<input type="text" id="maintenanceCosts" value="1" />%
+		</div>
+		<div>
+			<label for="propertyTaxes">Property Taxes: </label>
+			<input type="text" id="propertyTaxes" value="1.5" />%
+		</div>
+		<div>
+			<label for="propertyTaxes">Utilities: </label>
+			<input type="text" id="utilities" value="1.5" />%
+		</div>
+	</div>
+	<div id="nonMortgageFiller">&nbsp;</div>
+	
+	<div>
+		<input type="button" id="calculateHouseCost" onclick="calc();" value="Calculate" /><br /> <br />
+	<div>
+	
+	<h4>Housing Information</h4>
+	<div>
+		<label for="income">Income needed: </label>
+		<input type="text" id="income" disabled="disabled" />
+	</div>
+	<div>
+		<label for="monthlyCost">Totaly monthly cost of house: </label>
+		<input type="text" id="monthlyCost" disabled="disabled" />
+	</div>
+	
+	<br /><br />
+	
+	<div><a id="detailedCostLink" href="#detailedCostLink" onclick="showHideOther('detailedCostBreakdown');">Detailed cost breakdown</a></div>
+	<div id="detailedCostBreakdown" style="display:none;">
+		<h4>Cash Needed</h4>
+		
+		<div>
+			<label title="Calculated by taking house value multiplied by your percent specified in down payment under the cash needed section" for="downPaymentAmount">Down payment: </label>
+			<input type="text" id="downPaymentAmount" disabled="disabled" />
+		</div>
+		<div>
+			<label for="closingCostsAmount">Closing costs amount: </label>
+			<input type="text" id="closingCostsAmount" disabled="disabled" />
+		</div>
+		<div>
+			<label for="totalCash">Total cash needed: </label>
+			<input type="text" id="totalCash" disabled="disabled" />
+		</div>
+		
+		<br />
+		
+		<h4>Mortgage Information</h4>
+		<div>
+			<label for="mortgage">Mortgage payment: </label>
+			<input type="text" id="mortgage" disabled="disabled" />
+		</div>
+		<div>
+			<label for="loanAmount">Loan amount: </label>
+			<input type="text" id="loanAmount" disabled="disabled" />
+		</div>
+		<div>
+			<label for="totalRepaid">Total Repaid: </label>
+			<input type="text" id="totalRepaid" disabled="disabled" />
+		</div>
+		<div>
+			<label for="interestPaid">Interest repaid: </label>
+			<input type="text" id="interestPaid" disabled="disabled" />
+		</div>
+		<div>
+			<label for="percentInterest">Percent repaid that is interest: </label>
+			<input type="text" id="percentInterest" disabled="disabled" />
+		</div>
+		
+		
+		<br />
+		
+		<h4>Non-Mortgage Costs</h4>
+		<div>
+			<label for="insuranceAmount">Monthly Insurance Payment: </label>
+			<input type="text" id="insuranceAmount" disabled="disabled" />
+		</div>
+		<div>
+			<label for="maintenanceAmount">Monthly Maintenance: </label>
+			<input type="text" id="maintenanceAmount" disabled="disabled" />
+		</div>
+		<div>
+			<label for="taxAmount">Monthly Property Tax: </label>
+			<input type="text" id="taxAmount" disabled="disabled" />
+		</div>
+		<div>
+			<label for="utilityAmount">Monthly Utilities: </label>
+			<input type="text" id="utilityAmount" disabled="disabled" />
+		</div>
+		<div>
+			<label for="totalOther">Total non-mortgage: </label>
+			<input type="text" id="totalOther" disabled="disabled" />
+		</div>
+	</div>
+	
+</body>
+</html>
